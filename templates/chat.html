@@ -1,81 +1,587 @@
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 <!DOCTYPE html>
-<html>
-	<head>
-		<title>Chatbot</title>
-		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}"/>
-	</head>
-	
-	
-	<body>
-		<div class="container-fluid h-100">
-			<div class="row justify-content-center h-100">		
-				<div class="col-md-8 col-xl-6 chat">
-					<div class="card">
-						<div class="card-header msg_head">
-							<div class="d-flex bd-highlight">
-								<div class="img_cont">
-									<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img">
-									<!-- <img src="https://www.prdistribution.com/spirit/uploads/pressreleases/2019/newsreleases/d83341deb75c4c4f6b113f27b1e42cd8-chatbot-florence-already-helps-thousands-of-patients-to-remember-their-medication.png" class="rounded-circle user_img"> -->
-									<span class="online_icon"></span>
-								</div>
-								<div class="user_info">
-									<span>Medical Chatbot</span>
-									<p>Ask me anything!</p>
-								</div>
-							</div>
-						</div>
-						<div id="messageFormeight" class="card-body msg_card_body">
-							
-							
-						</div>
-						<div class="card-footer">
-							<form id="messageArea" class="input-group">
-                                <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control type_msg" required/>
-								<div class="input-group-append">
-									<button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
-								</div>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		
-		<script>
-			$(document).ready(function() {
-				$("#messageArea").on("submit", function(event) {
-					const date = new Date();
-					const hour = date.getHours();
-					const minute = date.getMinutes();
-					const str_time = hour+":"+minute;
-					var rawText = $("#text").val();
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-					var userHtml = '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' + rawText + '<span class="msg_time_send">'+ str_time + '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
-					
-					$("#text").val("");
-					$("#messageFormeight").append(userHtml);
+    <title>CareChat AI</title>
 
-					$.ajax({
-						data: {
-							msg: rawText,	
-						},
-						type: "POST",
-						url: "/get",
-					}).done(function(data) {
-						var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data + '<span class="msg_time">' + str_time + '</span></div></div>';
-						$("#messageFormeight").append($.parseHTML(botHtml));
-					});
-					event.preventDefault();
-				});
-			});
-		</script>
-        
-    </body>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 260px;
+            background: #111827;
+            color: white;
+            padding: 25px 18px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 35px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: #2563eb;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo h2 {
+            font-size: 20px;
+        }
+
+        .new-chat {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #374151;
+            border-radius: 10px;
+            background: #1f2937;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .new-chat:hover {
+            background: #374151;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .feature {
+            padding: 12px 8px;
+            color: #d1d5db;
+            font-size: 14px;
+            border-bottom: 1px solid #1f2937;
+        }
+
+        .feature span {
+            margin-right: 8px;
+        }
+
+        .status {
+            margin-top: auto;
+            padding: 12px;
+            background: #1f2937;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #d1d5db;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 7px;
+        }
+
+        /* MAIN */
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .topbar {
+            height: 70px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .topbar h1 {
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .topbar p {
+            font-size: 13px;
+            color: #6b7280;
+            margin-left: 15px;
+        }
+
+        /* CHAT */
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 20px 120px;
+        }
+
+        .chat-content {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .welcome {
+            text-align: center;
+            margin-top: 80px;
+            margin-bottom: 40px;
+        }
+
+        .welcome-icon {
+            width: 70px;
+            height: 70px;
+            background: #2563eb;
+            color: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: auto;
+            font-size: 32px;
+        }
+
+        .welcome h2 {
+            margin-top: 20px;
+            font-size: 28px;
+            color: #111827;
+        }
+
+        .welcome p {
+            margin-top: 10px;
+            color: #6b7280;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 25px;
+            gap: 12px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .bot .avatar {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user .avatar {
+            background: #111827;
+            color: white;
+        }
+
+        .bubble {
+            max-width: 70%;
+            padding: 14px 17px;
+            border-radius: 14px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .bot .bubble {
+            background: white;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+        }
+
+        .user .bubble {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* INPUT */
+
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 260px;
+            right: 0;
+            background: linear-gradient(transparent, #f5f7fb 25%);
+            padding: 25px 20px;
+        }
+
+        .input-container {
+            max-width: 850px;
+            margin: auto;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 14px;
+            padding: 8px;
+            display: flex;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        #text {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 12px;
+            font-size: 15px;
+        }
+
+        #send {
+            border: none;
+            background: #2563eb;
+            color: white;
+            border-radius: 10px;
+            padding: 0 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #send:hover {
+            background: #1d4ed8;
+        }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 8px;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                display: none;
+            }
+
+            .input-area {
+                left: 0;
+            }
+
+            .topbar {
+                padding: 0 18px;
+            }
+
+            .topbar p {
+                display: none;
+            }
+
+            .chat-container {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .bubble {
+                max-width: 82%;
+            }
+
+            .welcome {
+                margin-top: 40px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <div class="logo-icon">✚</div>
+            <h2>CareChat AI</h2>
+        </div>
+
+        <button class="new-chat" onclick="newChat()">
+            + New conversation
+        </button>
+
+        <div class="sidebar-title">
+            Features
+        </div>
+
+        <div class="feature">
+            <span>📚</span>
+            Medical knowledge base
+        </div>
+
+        <div class="feature">
+            <span>🤖</span>
+            AI-powered responses
+        </div>
+
+        <div class="feature">
+            <span>🔎</span>
+            RAG with Pinecone
+        </div>
+
+        <div class="feature">
+            <span>⚡</span>
+            LangChain
+        </div>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            AI system online
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+        <header class="topbar">
+            <h1>Medical AI Assistant</h1>
+            <p>Retrieval-Augmented Generation</p>
+        </header>
+
+
+        <!-- CHAT -->
+
+        <section class="chat-container">
+
+            <div class="chat-content" id="messageFormeight">
+
+                <div class="welcome" id="welcome">
+
+                    <div class="welcome-icon">
+                        ✚
+                    </div>
+
+                    <h2>How can I help you?</h2>
+
+                    <p>
+                        Ask a question about the medical information
+                        available in the knowledge base.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- INPUT -->
+
+        <div class="input-area">
+
+            <form id="messageArea">
+
+                <div class="input-container">
+
+                    <input
+                        type="text"
+                        id="text"
+                        name="msg"
+                        placeholder="Ask a medical question..."
+                        autocomplete="off"
+                        required
+                    >
+
+                    <button type="submit" id="send">
+                        Send
+                    </button>
+
+                </div>
+
+            </form>
+
+            <div class="disclaimer">
+                CareChat AI is an educational assistant and does not replace professional medical advice.
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    const form = document.getElementById("messageArea");
+    const input = document.getElementById("text");
+    const chat = document.getElementById("messageFormeight");
+    const welcome = document.getElementById("welcome");
+
+
+    function addMessage(type, text) {
+
+        const message = document.createElement("div");
+
+        message.className = "message " + type;
+
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+
+        avatar.innerHTML = type === "user" ? "U" : "AI";
+
+
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+
+        bubble.textContent = text;
+
+
+        message.appendChild(avatar);
+        message.appendChild(bubble);
+
+        chat.appendChild(message);
+
+        const container = document.querySelector(".chat-container");
+
+        container.scrollTop = container.scrollHeight;
+    }
+
+
+    form.addEventListener("submit", function(event) {
+
+        event.preventDefault();
+
+        const message = input.value.trim();
+
+        if (!message) {
+            return;
+        }
+
+
+        if (welcome) {
+            welcome.style.display = "none";
+        }
+
+
+        addMessage("user", message);
+
+        input.value = "";
+
+        const typing = document.createElement("div");
+
+        typing.className = "message bot";
+
+        typing.id = "typing";
+
+        typing.innerHTML = `
+            <div class="avatar">AI</div>
+            <div class="bubble">Thinking...</div>
+        `;
+
+        chat.appendChild(typing);
+
+
+        fetch("/get", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+
+            body: "msg=" + encodeURIComponent(message)
+
+        })
+
+        .then(response => response.text())
+
+        .then(data => {
+
+            const element = document.getElementById("typing");
+
+            if (element) {
+                element.remove();
+            }
+
+            addMessage("bot", data);
+
+        })
+
+        .catch(error => {
+
+            const element = document.getElementById("typing");
+
+            if (element) {
+                element.remove();
+            }
+
+            addMessage(
+                "bot",
+                "Sorry, I couldn't process your request. Please check that the Flask server and Ollama are running."
+            );
+
+            console.error(error);
+
+        });
+
+    });
+
+
+    function newChat() {
+
+        chat.innerHTML = `
+            <div class="welcome" id="welcome">
+
+                <div class="welcome-icon">
+                    ✚
+                </div>
+
+                <h2>How can I help you?</h2>
+
+                <p>
+                    Ask a question about the medical information
+                    available in the knowledge base.
+                </p>
+
+            </div>
+        `;
+
+        input.focus();
+    }
+
+</script>
+
+</body>
 </html>
